@@ -282,7 +282,7 @@ body.dark .ql-toolbar{background:#020617}
 
     <div class="actions">
       <button class="copy" onclick="copyText()">Copy</button>
-      <button class="save" onclick="saveResponse()">Save</button>
+      <!-- <button class="save" onclick="saveResponse()">Save</button> -->
       <button class="reset" onclick="analyze()">Regenerate</button>
       <button class="outline" onclick="window.location.href='{{ url('/history') }}'">History</button>
     </div>

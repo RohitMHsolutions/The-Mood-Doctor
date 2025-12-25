@@ -34,8 +34,21 @@ class AiResponder
             $doctor = app(TheModdDoctor::class);
             $result = $doctor->analyzeEmailEmotion($customerMessage);
 
-            if (!empty($result['rage_score']) || isset($result['empathetic_response'])) {
-                $rage = max(0, min(100, (int) ($result['rage_score'] ?? 0)));
+            // If AI returned anything useful, merge it with the local heuristic.
+            // We prefer the AI score when it's higher, but we don't allow the AI
+            // to drop the rage level below our local heuristic baseline. This
+            // avoids cases where the AI returns 0 for messages that the
+            // heuristic flags as non-trivial (for example, strongly worded
+            // complaints or repeated punctuation). It also preserves the
+            // empathetic response when provided by the AI.
+            if (!empty($result) && (isset($result['rage_score']) || isset($result['empathetic_response']))) {
+                $aiScore = isset($result['rage_score']) ? (int) $result['rage_score'] : 0;
+                $aiScore = max(0, min(100, $aiScore));
+
+                // compute local heuristic and take the higher value
+                $heuristic = self::estimateRageLevel($customerMessage);
+                $rage = max($heuristic, $aiScore);
+
                 $reply = (string) ($result['empathetic_response'] ?? '');
                 return [
                     'rage_level' => $rage,
@@ -54,7 +67,7 @@ class AiResponder
      */
     protected static function estimateRageLevel(string $customerMessage): int
     {
-        $score = 20; // base tension for negative reports
+        $score = 20; // base tension for negative reports 
 
         $score += min(substr_count($customerMessage, '!') * 5, 25);
         $score += min(substr_count($customerMessage, '?') * 2, 10);
