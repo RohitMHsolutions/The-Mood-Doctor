@@ -3,474 +3,516 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Customer De-escalator AI</title>
+<title>THE MOOD DOCTOR</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.6/quill.bubble.css" rel="stylesheet">
 
 <style>
-/* ================= THEME ================= */
-:root{
-  --bg:#F3F4F6;
-  --card:#FFFFFF;
-  --text:#111827;
-  --muted:#6B7280;
-  --border:#E5E7EB;
-  --primary:#4F46E5;
-  --primary-strong:#4338CA;
+/* ================= VARIABLES ================= */
+:root {
+  --bg-dark: #030712;       /* Deepest Black/Blue */
+  --bg-grid: #111827;       /* Grid Lines */
+  
+  --glass-bg: rgba(17, 24, 39, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
 
-  --low:#10B981;
-  --mid:#F59E0B;
-  --high:#EF4444;
-}
+  --primary: #6366f1;       /* Indigo Neon */
+  --primary-glow: rgba(99, 102, 241, 0.4);
+  --accent: #06b6d4;        /* Cyan Neon */
+  
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
 
-body.dark{
-  --bg:#0F172A;
-  --card:#020617;
-  --text:#E5E7EB;
-  --muted:#9CA3AF;
-  --border:#1F2937;
-  --primary:#6366F1;
-  --primary-strong:#4F46E5;
+  --rage-low: #10b981;
+  --rage-mid: #f59e0b;
+  --rage-high: #ef4444;
 }
 
-/* ================= BASE ================= */
-*{box-sizing:border-box;font-family:Inter,system-ui}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  padding:24px;
-  display:flex;
-  justify-content:center;
-  transition:.3s;
-}
-.container{width:100%;max-width:960px}
+/* ================= RESET & BASE ================= */
+* { box-sizing: border-box; }
 
-/* ================= DARK TOGGLE ================= */
-.theme-toggle{
-  position:fixed;
-  top:18px;
-  right:18px;
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  background:var(--card);
-  border:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  font-size:20px;
-  box-shadow:0 6px 16px rgba(0,0,0,.15);
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
 }
 
-/* ================= CARD ================= */
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:22px;
-  margin-bottom:20px;
-  box-shadow:0 12px 24px rgba(0,0,0,.08);
+.container { width: 100%; max-width: 950px; position: relative; }
+
+/* ================= TYPOGRAPHY ================= */
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  background: linear-gradient(to right, #fff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  letter-spacing: -1px;
 }
 
-/* ================= HEADER ================= */
-.header{text-align:center;margin-bottom:20px}
-.header p{color:var(--muted)}
-
-/* ================= INPUT ================= */
-textarea{
-  width:100%;
-  min-height:140px;
-  padding:14px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--text);
-  font-size:15px;
-}
-textarea:focus{outline:none;border-color:var(--primary)}
-
-button{
-  width:100%;
-  margin-top:14px;
-  padding:14px;
-  border-radius:10px;
-  border:none;
-  background:var(--primary);
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-  transition:.15s;
-}
-button:disabled{opacity:.7;cursor:not-allowed}
-button:hover:not(:disabled){background:var(--primary-strong)}
-
-/* ================= RESULTS ================= */
-.results{display:none}
-
-/* ================= RAGE ================= */
-.rage-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:8px;
-}
-.rage-value{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:22px;
-  font-weight:900;
-}
-.rage-emoji{font-size:26px}
-
-/* RAGE BAR */
-.track{
-  height:14px;
-  background:#E5E7EB;
-  border-radius:999px;
-  overflow:hidden;
-  margin-bottom:16px;
-}
-.fill{
-  height:100%;
-  width:0%;
-  border-radius:999px;
-  position:relative;
-  transform-origin:left;
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 40px;
+  font-weight: 300;
 }
 
-/* Sweep shine */
-.fill::after{
-  content:"";
-  position:absolute;
-  top:0;
-  left:-30%;
-  width:30%;
-  height:100%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,.6),transparent);
-  animation:sweep 1.2s ease forwards;
+/* ================= GLASS CARDS ================= */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Animations */
-.bounce{animation:bounceFill .9s cubic-bezier(.34,1.56,.64,1)}
-.emoji-pop{animation:emojiPop .6s ease}
-.emoji-shake{animation:emojiShake .4s linear}
-
-@keyframes sweep{
-  from{left:-30%}
-  to{left:110%}
-}
-@keyframes bounceFill{
-  0%{transform:scaleX(0)}
-  80%{transform:scaleX(1.06)}
-  100%{transform:scaleX(1)}
-}
-@keyframes emojiPop{
-  0%{transform:scale(0)}
-  70%{transform:scale(1.3)}
-  100%{transform:scale(1)}
-}
-@keyframes emojiShake{
-  0%,100%{transform:translateX(0)}
-  25%{transform:translateX(-4px)}
-  75%{transform:translateX(4px)}
+/* Subtle shine effect on cards */
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 
-/* ================= EDITOR ================= */
-.response-label{
-  font-weight:600;
-  font-size:14px;
-  margin-bottom:6px;
+/* ================= INPUT AREA ================= */
+.input-label {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  display: block;
 }
-.editor-shell{
-  border:1px solid var(--border);
-  border-radius:14px;
-  overflow:hidden;
-  background:var(--card);
-}
-.ql-toolbar{
-  border:none!important;
-  border-bottom:1px solid var(--border)!important;
-  background:rgba(0,0,0,.03);
-}
-body.dark .ql-toolbar{background:#020617}
-.ql-container{border:none!important}
-.ql-editor{
-  padding:10px 12px!important;
-  line-height:1.45;
-}
-.ql-editor p{margin:0 0 6px 0!important;}
-.ql-editor p:last-child{margin-bottom:0!important}
 
-/* ================= ACTIONS ================= */
-.actions{
-  display:flex;
-  gap:12px;
-  margin-top:14px;
-  flex-wrap:wrap;
+textarea {
+  width: 100%;
+  min-height: 150px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 20px;
+  color: var(--text-main);
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
-.actions button{flex:1}
-.copy{background:#16A34A}
-.reset{background:#DC2626}
-.save{background:var(--primary)}
-.outline{
-  background:transparent;
-  border:1px solid var(--border);
-  color:var(--text);
-  width:auto;
-}
-.outline:hover{background:rgba(0,0,0,.04)}
 
-/* ================= HISTORY ================= */
-.history-list{list-style:none;padding:0;display:grid;gap:10px;margin-top:10px}
-.history-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--card)}
-.history-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.history-badge{padding:2px 8px;border-radius:999px;font-size:0.82rem;font-weight:700;color:#fff}
-.history-snippet{color:var(--muted);font-size:0.95rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* ================= AI BUTTONS ================= */
+.btn-main {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 0 0 25px var(--primary-glow);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px var(--primary-glow);
+}
+
+.btn-main:disabled { opacity: 0.6; cursor: wait; }
+
+/* Shine animation inside button */
+.btn-shine {
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shine 3s infinite;
+}
+@keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+/* ================= RESULTS AREA ================= */
+.results-container { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Emotion Grid */
+#emotionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.emotion-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 15px;
+  transition: transform 0.2s;
+}
+
+.emotion-card:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-2px); }
+
+.emo-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.emo-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.emo-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 1s ease;
+  box-shadow: 0 0 10px currentColor; /* Glow matches color */
+}
+
+/* ================= EDITOR & ACTIONS ================= */
+.editor-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  margin-top: 10px;
+}
+
+/* Quill Bubble Theme Overrides */
+.ql-container { font-family: 'Inter', sans-serif !important; font-size: 1.05rem !important; }
+.ql-editor { padding: 25px !important; color: #e4e4e7; line-height: 1.7; }
+.ql-editor.ql-blank::before { color: rgba(255,255,255,0.2) !important; font-style: normal !important; }
+.ql-bubble .ql-tooltip { background-color: #27272a !important; border-radius: 8px; }
+.ql-bubble .ql-tooltip-arrow { border-bottom-color: #27272a !important; }
+
+/* Action Buttons */
+.actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.btn-secondary {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+
+.btn-save { border-color: rgba(16, 185, 129, 0.3); color: #34d399; background: rgba(16, 185, 129, 0.1); }
+.btn-save:hover { background: rgba(16, 185, 129, 0.2); box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+
+.btn-link { 
+  background: transparent; 
+  border: none; 
+  color: var(--text-muted); 
+  width: 100%; 
+  margin-top: 15px; 
+  cursor: pointer; 
+}
+.btn-link:hover { color: var(--text-main); text-decoration: underline; }
 
 /* ================= TOAST ================= */
-#toast-container{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:center}
-.toast{background:var(--card);color:var(--text);padding:10px 16px;border-radius:10px;border:1px solid var(--border);box-shadow:0 8px 18px rgba(0,0,0,.12);animation:toastIn .25s ease;min-width:240px;text-align:center}
-.toast.fade-out{animation:toastOut .25s ease forwards}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%, -10px)}to{opacity:1;transform:translate(-50%,0)}}
-@keyframes toastOut{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-8px)}}
-
-/* ================= RESPONSIVE ================= */
-@media(max-width:640px){
-  body{padding:14px}
-  .card{padding:16px}
-  .actions{flex-direction:column}
+#toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
 }
+.toast {
+  background: rgba(20, 20, 25, 0.95);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex; align-items: center; gap: 10px; min-width: 250px;
+}
+.toast.fade-out { opacity: 0; transform: translateX(20px); transition: 0.3s; }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
 </style>
 </head>
 
 <body>
-<div class="theme-toggle" id="themeIcon" onclick="toggleTheme()">🌙</div>
+
 <div id="toast-container"></div>
 
 <div class="container">
-  <div class="header">
-    <h1>🧠 Mood Doctor</h1>
-    <p>Detect rage & generate calming responses</p>
+  
+  <h1>The Mood Doctor</h1>
+  {{-- <div class="subtitle">Emotional Intelligence Analysis & De-escalation Protocol</div> --}}
+
+  <div class="glass-panel">
+    <span class="input-label">Incoming Message</span>
+    <textarea id="emailInput" placeholder="Paste the customer email here..."></textarea>
+    
+    <button id="analyzeBtn" class="btn-main" onclick="analyze()">
+      <div class="btn-shine"></div>
+      <span id="btnText">Analyze & Generate Response</span>
+    </button>
   </div>
 
-  <div class="card">
-    <textarea id="emailInput" placeholder="Paste angry customer email here..."></textarea>
-    <button id="analyzeBtn" onclick="analyze()">Analyze & Generate</button>
-  </div>
+  <div class="glass-panel results-container" id="resultsCard">
+    
+    <span class="input-label">Detected Emotional Spectrum</span>
+    <div id="emotionGrid">
+      </div>
 
-  <div class="card results" id="resultsCard">
-    <div class="rage-head">
-      <span>Rage Level</span>
-      <span class="rage-value">
-        <span class="rage-emoji" id="rageEmoji">😌</span>
-        <span id="rageNum">0/100</span>
-      </span>
-    </div>
-    <div class="track">
-      <div class="fill" id="rageBar"></div>
-    </div>
-
-    <div class="response-label">Suggested Response (Editable)</div>
-    <div class="editor-shell">
+    <span class="input-label" style="color: var(--primary);">AI Suggested Response</span>
+    <div class="editor-wrapper">
       <div id="editor-container"></div>
     </div>
 
-    <div class="actions">
-      <button class="copy" onclick="copyText()">Copy</button>
-      <button class="save" onclick="saveResponse()">Save</button>
-      <button class="reset" onclick="analyze()">Regenerate</button>
-      <button class="outline" onclick="window.location.href='{{ url('/history') }}'">History</button>
+    <div class="actions-row">
+      <button class="btn-secondary" onclick="copyText()">
+        <span>📋</span> Copy Text
+      </button>
+      <button class="btn-secondary btn-save" onclick="saveResponse()">
+        <span>💾</span> Save to Database
+      </button>
     </div>
+    
+    <button class="btn-link" onclick="window.location.reload()">Start New Analysis</button>
+    <button class="btn-link" onclick="window.location.href='{{ url('/history') }}'">View History Log</button>
+
   </div>
+
 </div>
 
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
+// --- Config & Init ---
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 const api = {
   analyze: '{{ url('/rage/analyze') }}',
-  save: '{{ url('/rage/save') }}',
-  history: '{{ url('/rage/history') }}'
+  save: '{{ url('/rage/save') }}'
 };
 
-const quill = new Quill('#editor-container',{theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],[{header:[1,2,3,false]}],['clean']]}});
+// Use "Bubble" theme for cleaner AI look
+const quill = new Quill('#editor-container', {
+  theme: 'bubble',
+  placeholder: 'Generating response...',
+  modules: { toolbar: [['bold', 'italic'], ['link', 'clean']] }
+});
 
-function toggleTheme(){
-  document.body.classList.toggle("dark");
-  document.getElementById("themeIcon").textContent =
-    document.body.classList.contains("dark") ? "☀️" : "🌙";
+// --- UI Helpers ---
+function setLoading(isLoading, text) {
+  const btn = document.getElementById('analyzeBtn');
+  const label = document.getElementById('btnText');
+  btn.disabled = isLoading;
+  label.innerText = text;
 }
 
-function showToast(msg){
-  const c=document.getElementById('toast-container');
-  const t=document.createElement('div');
-  t.className='toast';
-  t.textContent=msg;
-  c.appendChild(t);
-  setTimeout(()=>{
+function showToast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  
+  let icon = 'ℹ️';
+  if(type === 'success') icon = '✅';
+  if(type === 'error') icon = '⚠️';
+  
+  t.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+  container.appendChild(t);
+  
+  setTimeout(() => {
     t.classList.add('fade-out');
-    t.addEventListener('animationend',()=>t.remove());
-  },2000);
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
 }
 
-function setLoading(state,label){
-  const btn=document.getElementById('analyzeBtn');
-  btn.disabled=state;
-  btn.textContent=label;
+// --- Typing Effect (Visual Polish) ---
+function typeWriter(htmlContent) {
+  quill.setText(''); // clear
+  // We use a trick: set contents silently, then type it out purely visually? 
+  // For HTML preservation, simple typing is hard. 
+  // Let's stick to a clean fade-in or character append for plain text.
+  // For this demo, we will just paste the HTML but add a slight delay to feel like processing.
+  
+  // Reset opacity
+  const editor = document.querySelector('.ql-editor');
+  editor.style.opacity = 0;
+  editor.style.transition = 'opacity 1s ease';
+  
+  setTimeout(() => {
+    quill.clipboard.dangerouslyPasteHTML(htmlContent);
+    editor.style.opacity = 1;
+  }, 300);
 }
 
-function colorForRage(rage){
-  if(rage<=20) return "var(--low)";
-  if(rage<50) return "#FACC15";
-  if(rage<80) return "var(--mid)";
-  return "var(--high)";
-}
+// --- Emotion Render ---
+function renderEmotions(emotions) {
+  const grid = document.getElementById('emotionGrid');
+  grid.innerHTML = '';
+  
+  if(!emotions) return;
 
-function emojiForRage(rage){
-  if(rage<=20) return "😌";
-  if(rage<50) return "😕";
-  if(rage<80) return "😠";
-  return "🤬";
-}
+  Object.entries(emotions).forEach(([name, val]) => {
+    const score = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
+    
+    // Dynamic Color based on Emotion
+    let color = 'var(--accent)'; // Default Blue
+    if(['rage', 'anger', 'frustration'].includes(name.toLowerCase())) color = 'var(--rage-high)';
+    if(['joy', 'happiness'].includes(name.toLowerCase())) color = 'var(--rage-low)';
+    if(['sadness', 'disappointment'].includes(name.toLowerCase())) color = '#a855f7'; // Purple
 
-async function analyze(){
-  const text=document.getElementById("emailInput").value;
-  if(!text.trim()){
-    showToast("Please paste an email first.");
-    return;
-  }
+    const div = document.createElement('div');
+    div.className = 'emotion-card';
+    div.innerHTML = `
+      <div class="emo-header">
+        <span>${name}</span>
+        <span style="color:${color}">${score}%</span>
+      </div>
+      <div class="emo-bar-bg">
+        <div class="emo-bar-fill" style="width: 0%; background-color: ${color}; box-shadow: 0 0 8px ${color};"></div>
+      </div>
+    `;
+    grid.appendChild(div);
 
-  setLoading(true,"Analyzing...");
-
-  try{
-    const res=await fetch(api.analyze,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'X-CSRF-TOKEN':csrfToken,
-        'Accept':'application/json'
-      },
-      body:JSON.stringify({customer_message:text})
-    });
-    if(!res.ok) throw new Error("Analyze failed");
-    const data=await res.json();
-
-    const rage=Math.max(0,Math.min(100, data.rage_level ?? 0));
-    const reply=data.rewritten_reply ?? '';
-    window.__aiReply = reply;
-
-    renderResults(rage, reply);
-    showToast("Analysis complete");
-  }catch(err){
-    console.error(err);
-    showToast("Error analyzing email");
-  }finally{
-    setLoading(false,"Analyze & Generate");
-  }
-}
-
-function renderResults(rage, replyHtml){
-  const result=document.getElementById("resultsCard");
-  const bar=document.getElementById("rageBar");
-  const num=document.getElementById("rageNum");
-  const emojiEl=document.getElementById("rageEmoji");
-
-  result.style.display="block";
-  bar.className="fill";
-  bar.style.width="0%";
-  num.textContent="0/100";
-  emojiEl.className="rage-emoji";
-  emojiEl.textContent="😌";
-
-  quill.clipboard.dangerouslyPasteHTML(replyHtml || '');
-  cleanQuillSpacing();
-
-  let c=0;
-  const target=rage;
-  const timer=setInterval(()=>{
-    c++;
-    bar.style.width=c+"%";
-    num.textContent=c+"/100";
-    if(c>=target){
-      clearInterval(timer);
-      const color=colorForRage(target);
-      bar.style.background=color;
-      emojiEl.textContent=emojiForRage(target);
-      if(target>=50 && target<80) emojiEl.classList.add("emoji-pop");
-      if(target>=80) emojiEl.classList.add("emoji-shake");
-      bar.classList.add("bounce");
-    }
-  },8);
-}
-
-function cleanQuillSpacing(){
-  quill.root.querySelectorAll('p').forEach(p=>{
-    if(p.innerHTML === '<br>' || p.innerHTML.trim()===''){
-      p.remove();
-    }
+    // Animate Bar after append
+    setTimeout(() => {
+      div.querySelector('.emo-bar-fill').style.width = score + '%';
+    }, 100);
   });
 }
 
-async function saveResponse(){
-  const text=document.getElementById("emailInput").value;
-  const rageText=document.getElementById("rageNum").textContent;
-  const rage=parseInt(rageText,10) || 0;
-  const html=quill.root.innerHTML;
-  const aiReply = window.__aiReply || html;
+// --- Main Logic ---
+async function analyze() {
+  const text = document.getElementById("emailInput").value;
+  if(!text.trim()) { showToast("Please enter an email text", "error"); return; }
 
-  if(!text.trim()){
-    showToast("Analyze an email first.");
-    return;
-  }
+  setLoading(true, "Processing Neural Engine...");
+  document.getElementById('resultsCard').style.display = 'none';
 
-  try{
-    const res=await fetch(api.save,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'X-CSRF-TOKEN':csrfToken,
-        'Accept':'application/json'
+  try {
+    const res = await fetch(api.analyze, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
       },
-      body:JSON.stringify({
-        customer_message:text,
-        rage_level:rage,
-        ai_reply: aiReply,
-        user_reply: html,
-        rewritten_reply: aiReply,
-        support_draft:null
+      body: JSON.stringify({ customer_message: text })
+    });
+
+    if(!res.ok) throw new Error("API Failed");
+    const data = await res.json();
+
+    // Store Globals for Saving
+    window.__lastData = {
+      rage: data.rage_level,
+      reply: data.rewritten_reply,
+      emotions: data.emotions,
+      language: data.language
+    };
+
+    // Render
+    document.getElementById('resultsCard').style.display = 'block';
+    renderEmotions(data.emotions || {});
+    typeWriter(data.rewritten_reply || '');
+    
+    showToast("Analysis Complete", "success");
+
+  } catch(err) {
+    console.error(err);
+    showToast("Connection to Neural Engine Failed", "error");
+    // DEMO DATA FALLBACK (If backend is offline)
+    // remove this block in production
+    document.getElementById('resultsCard').style.display = 'block';
+    renderEmotions({'Rage': 85, 'Frustration': 92, 'Sadness': 12});
+    typeWriter('<p>I completely understand your frustration...</p>');
+  } finally {
+    setLoading(false, "Analyze & Generate Response");
+  }
+}
+
+async function saveResponse() {
+  if(!window.__lastData) { showToast("No analysis to save", "error"); return; }
+  
+  const userEditedHtml = quill.root.innerHTML;
+  const originalText = document.getElementById("emailInput").value;
+
+  try {
+    const res = await fetch(api.save, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      body: JSON.stringify({
+        customer_message: originalText,
+        rage_level: window.__lastData.rage,
+        emotions: window.__lastData.emotions,
+        language: window.__lastData.language,
+        ai_reply: window.__lastData.reply,
+        user_reply: userEditedHtml,
+        rewritten_reply: userEditedHtml
       })
     });
-    if(!res.ok) throw new Error("Save failed");
-    await res.json();
-    showToast("Draft saved");
-    loadHistory();
-  }catch(err){
-    console.error(err);
-    showToast("Error saving draft");
+    
+    if(!res.ok) throw new Error("Save Failed");
+    showToast("Response Saved to Database", "success");
+  } catch(e) {
+    showToast("Error saving data", "error");
   }
 }
 
-async function loadHistory(){
-  // intentionally left empty; history is now on a separate page
+function copyText() {
+  const text = quill.getText();
+  navigator.clipboard.writeText(text);
+  showToast("Copied to Clipboard", "success");
 }
-
-function copyText(){
-  const plain=quill.getText();
-  navigator.clipboard.writeText(plain);
-  showToast("Copied to clipboard");
-}
-
-function escapeHtml(str){
-  return str.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-}
-
-// no auto history load on main page
 </script>
 </body>
 </html>
-

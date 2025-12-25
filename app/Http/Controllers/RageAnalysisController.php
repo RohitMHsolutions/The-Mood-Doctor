@@ -27,6 +27,8 @@ class RageAnalysisController extends Controller
             'rewritten_reply' => $analysis['rewritten_reply'],
             'ai_reply' => $analysis['rewritten_reply'],
             'user_reply' => null,
+            'language' => $analysis['language'] ?? null,
+            'emotions' => $analysis['emotions'] ?? null,
         ]);
 
         return response()->json([
@@ -35,6 +37,8 @@ class RageAnalysisController extends Controller
             'rewritten_reply' => $record->rewritten_reply,
             'ai_reply' => $record->ai_reply,
             'user_reply' => $record->user_reply,
+            'language' => $record->language,
+            'emotions' => $record->emotions,
             'created_at' => $record->created_at,
         ], 201);
     }
@@ -51,6 +55,8 @@ class RageAnalysisController extends Controller
             'user_reply' => ['required', 'string'],
             'rewritten_reply' => ['nullable', 'string'], // backward compatibility
             'support_draft' => ['nullable', 'string'],
+            'language' => ['nullable', 'string', 'max:32'],
+            'emotions' => ['nullable', 'array'],
         ]);
 
         $record = RageAnalysis::create([
@@ -60,6 +66,8 @@ class RageAnalysisController extends Controller
             'rewritten_reply' => $payload['rewritten_reply'] ?? $payload['ai_reply'],
             'ai_reply' => $payload['ai_reply'],
             'user_reply' => $payload['user_reply'],
+            'language' => $payload['language'] ?? null,
+            'emotions' => $payload['emotions'] ?? null,
         ]);
 
         return response()->json([
@@ -87,6 +95,8 @@ class RageAnalysisController extends Controller
                 'ai_reply',
                 'user_reply',
                 'rewritten_reply',
+                'language',
+                'emotions',
                 'created_at',
             ]);
 

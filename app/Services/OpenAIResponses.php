@@ -22,7 +22,7 @@ class OpenAIResponses
 
     private function getApiKey(): string
     {
-        return (string) env('OPENAI_API_KEY', '');
+        return (string) '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';
     }
 
     /**

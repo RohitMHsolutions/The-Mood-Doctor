@@ -22,6 +22,10 @@ class AiResponder
         return [
             'rage_level' => $rageLevel,
             'rewritten_reply' => $rewrittenReply,
+            'language' => 'unknown',
+            'emotions' => [
+                'rage' => $rageLevel,
+            ],
         ];
     }
 
@@ -34,14 +38,27 @@ class AiResponder
             $doctor = app(TheModdDoctor::class);
             $result = $doctor->analyzeEmailEmotion($customerMessage);
 
-            if (!empty($result['rage_score']) || isset($result['empathetic_response'])) {
-                $rage = max(0, min(100, (int) ($result['rage_score'] ?? 0)));
-                $reply = (string) ($result['empathetic_response'] ?? '');
-                return [
-                    'rage_level' => $rage,
-                    'rewritten_reply' => $reply,
-                ];
+            // If the AI call failed or returned an error, fall back.
+            if (empty($result) || isset($result['error'])) {
+                return null;
             }
+
+            $emotions = $result['emotions'] ?? [];
+            $rage = isset($emotions['rage']) ? (int) $emotions['rage'] : (int) ($result['rage_score'] ?? 0);
+            $rage = max(0, min(100, $rage));
+            $reply = (string) ($result['empathetic_response'] ?? '');
+
+            // Require at least a reply; if missing, fall back to heuristic.
+            if ($reply === '') {
+                return null;
+            }
+
+            return [
+                'rage_level' => $rage,
+                'rewritten_reply' => $reply,
+                'language' => $result['language'] ?? '',
+                'emotions' => $emotions,
+            ];
         } catch (\Throwable $e) {
             // swallow and fall back to heuristic
         }

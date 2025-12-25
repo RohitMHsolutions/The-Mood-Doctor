@@ -16,6 +16,12 @@ class RageAnalysis extends Model
         'rewritten_reply',
         'ai_reply',
         'user_reply',
+        'language',
+        'emotions',
+    ];
+
+    protected $casts = [
+        'emotions' => 'array',
     ];
 }
 
