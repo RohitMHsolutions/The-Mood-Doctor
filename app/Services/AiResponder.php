@@ -17,6 +17,8 @@ class AiResponder
             'rewritten_reply' => $rewrittenReply,
         ];
     }
+// testing
+
 
     /**
      * Rough heuristic to keep the API usable while the real AI hook is wired up.
