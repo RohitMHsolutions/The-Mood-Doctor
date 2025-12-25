@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rage_analyses', function (Blueprint $table): void {
             $table->id();
             $table->text('customer_message');
-            $table->text('support_draft');
+            $table->text('support_draft')->nullable();
             $table->unsignedTinyInteger('rage_level');
             $table->text('rewritten_reply');
             $table->timestamps();

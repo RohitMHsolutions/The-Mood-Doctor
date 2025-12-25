@@ -5,12 +5,12 @@ namespace App\Services;
 class AiResponder
 {
     /**
-     * Analyze an angry customer message and return a rage level plus a softened reply.
+     * Analyze a customer email and return rage intensity plus an empathetic reply.
      */
-    public static function analyze(string $customerMessage, string $supportDraft): array
+    public static function analyzeMessage(string $customerMessage): array
     {
         $rageLevel = self::estimateRageLevel($customerMessage);
-        $rewrittenReply = self::rewriteDraft($supportDraft, $customerMessage, $rageLevel);
+        $rewrittenReply = self::craftReply($customerMessage, $rageLevel);
 
         return [
             'rage_level' => $rageLevel,
@@ -41,10 +41,7 @@ class AiResponder
         return max(0, min(100, $score));
     }
 
-    /**
-     * Gentle rewrite that acknowledges the pain and promises concrete next steps.
-     */
-    protected static function rewriteDraft(string $supportDraft, string $customerMessage, int $rageLevel): string
+    protected static function craftReply(string $customerMessage, int $rageLevel): string
     {
         $tone = $rageLevel > 70
             ? "I understand this has been very frustrating."
@@ -53,7 +50,7 @@ class AiResponder
                 : "Thanks for letting us know about this.");
 
         $assurance = "I'm here to help resolve this quickly.";
-        $actionLine = "Based on what you shared, here is what I will do next: " . trim($supportDraft);
+        $actionLine = "I'll review your account details now and update you with a concrete fix.";
 
         $summary = trim($customerMessage);
         $summary = mb_substr($summary, 0, 240);
