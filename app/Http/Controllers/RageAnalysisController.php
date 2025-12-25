@@ -20,15 +20,23 @@ class RageAnalysisController extends Controller
 
         $analysis = AiResponder::analyzeMessage($payload['customer_message']);
 
-        return response()->json([
+        $record = RageAnalysis::create([
+            'customer_message' => $payload['customer_message'],
+            'support_draft' => null,
             'rage_level' => $analysis['rage_level'],
             'rewritten_reply' => $analysis['rewritten_reply'],
-            'sample_json' => [
-                'customer_message' => $payload['customer_message'],
-                'rage_level' => $analysis['rage_level'],
-                'rewritten_reply' => $analysis['rewritten_reply'],
-            ],
+            'ai_reply' => $analysis['rewritten_reply'],
+            'user_reply' => null,
         ]);
+
+        return response()->json([
+            'id' => $record->id,
+            'rage_level' => $record->rage_level,
+            'rewritten_reply' => $record->rewritten_reply,
+            'ai_reply' => $record->ai_reply,
+            'user_reply' => $record->user_reply,
+            'created_at' => $record->created_at,
+        ], 201);
     }
 
     /**
@@ -39,7 +47,9 @@ class RageAnalysisController extends Controller
         $payload = $request->validate([
             'customer_message' => ['required', 'string'],
             'rage_level' => ['required', 'integer', 'min:0', 'max:100'],
-            'rewritten_reply' => ['required', 'string'],
+            'ai_reply' => ['required', 'string'],
+            'user_reply' => ['required', 'string'],
+            'rewritten_reply' => ['nullable', 'string'], // backward compatibility
             'support_draft' => ['nullable', 'string'],
         ]);
 
@@ -47,13 +57,17 @@ class RageAnalysisController extends Controller
             'customer_message' => $payload['customer_message'],
             'support_draft' => $payload['support_draft'] ?? null,
             'rage_level' => $payload['rage_level'],
-            'rewritten_reply' => $payload['rewritten_reply'],
+            'rewritten_reply' => $payload['rewritten_reply'] ?? $payload['ai_reply'],
+            'ai_reply' => $payload['ai_reply'],
+            'user_reply' => $payload['user_reply'],
         ]);
 
         return response()->json([
             'id' => $record->id,
             'rage_level' => $record->rage_level,
             'rewritten_reply' => $record->rewritten_reply,
+            'ai_reply' => $record->ai_reply,
+            'user_reply' => $record->user_reply,
             'created_at' => $record->created_at,
         ], 201);
     }
@@ -70,6 +84,8 @@ class RageAnalysisController extends Controller
                 'id',
                 'customer_message',
                 'rage_level',
+                'ai_reply',
+                'user_reply',
                 'rewritten_reply',
                 'created_at',
             ]);

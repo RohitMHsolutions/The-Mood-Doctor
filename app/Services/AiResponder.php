@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\TheModdDoctor;
+
 class AiResponder
 {
     /**
@@ -9,6 +11,11 @@ class AiResponder
      */
     public static function analyzeMessage(string $customerMessage): array
     {
+        $aiResult = self::tryAi($customerMessage);
+        if ($aiResult !== null) {
+            return $aiResult;
+        }
+
         $rageLevel = self::estimateRageLevel($customerMessage);
         $rewrittenReply = self::craftReply($customerMessage, $rageLevel);
 
@@ -16,6 +23,30 @@ class AiResponder
             'rage_level' => $rageLevel,
             'rewritten_reply' => $rewrittenReply,
         ];
+    }
+
+    /**
+     * Attempt real AI; return null on failure to fall back.
+     */
+    protected static function tryAi(string $customerMessage): ?array
+    {
+        try {
+            $doctor = app(TheModdDoctor::class);
+            $result = $doctor->analyzeEmailEmotion($customerMessage);
+
+            if (!empty($result['rage_score']) || isset($result['empathetic_response'])) {
+                $rage = max(0, min(100, (int) ($result['rage_score'] ?? 0)));
+                $reply = (string) ($result['empathetic_response'] ?? '');
+                return [
+                    'rage_level' => $rage,
+                    'rewritten_reply' => $reply,
+                ];
+            }
+        } catch (\Throwable $e) {
+            // swallow and fall back to heuristic
+        }
+
+        return null;
     }
 
     /**
