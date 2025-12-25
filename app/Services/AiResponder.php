@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\TheModdDoctor;
+
 class AiResponder
 {
     /**
@@ -9,16 +11,62 @@ class AiResponder
      */
     public static function analyzeMessage(string $customerMessage): array
     {
+        $aiResult = self::tryAi($customerMessage);
+        if ($aiResult !== null) {
+            return $aiResult;
+        }
+
         $rageLevel = self::estimateRageLevel($customerMessage);
         $rewrittenReply = self::craftReply($customerMessage, $rageLevel);
 
         return [
             'rage_level' => $rageLevel,
             'rewritten_reply' => $rewrittenReply,
+            'language' => 'unknown',
+            'emotions' => [
+                'rage' => $rageLevel,
+            ],
         ];
     }
 // testing
 
+
+    /**
+     * Attempt real AI; return null on failure to fall back.
+     */
+    protected static function tryAi(string $customerMessage): ?array
+    {
+        try {
+            $doctor = app(TheModdDoctor::class);
+            $result = $doctor->analyzeEmailEmotion($customerMessage);
+
+            // If the AI call failed or returned an error, fall back.
+            if (empty($result) || isset($result['error'])) {
+                return null;
+            }
+
+            $emotions = $result['emotions'] ?? [];
+            $rage = isset($emotions['rage']) ? (int) $emotions['rage'] : (int) ($result['rage_score'] ?? 0);
+            $rage = max(0, min(100, $rage));
+            $reply = (string) ($result['empathetic_response'] ?? '');
+
+            // Require at least a reply; if missing, fall back to heuristic.
+            if ($reply === '') {
+                return null;
+            }
+
+            return [
+                'rage_level' => $rage,
+                'rewritten_reply' => $reply,
+                'language' => $result['language'] ?? '',
+                'emotions' => $emotions,
+            ];
+        } catch (\Throwable $e) {
+            // swallow and fall back to heuristic
+        }
+
+        return null;
+    }
 
     /**
      * Rough heuristic to keep the API usable while the real AI hook is wired up.
